@@ -5,8 +5,12 @@ const cors = require("cors");
 const bodyParser = require('body-parser');
 const sequelize = require('./sequelize');
 const usuarioRoutes = require('./rutas/UsuarioRuta');
-
+const articuloRuta = require('./rutas/ProductoRuta');
+const path = require("path");
 const app = express();
+
+//achivos estaticos 
+app.use(express.static(path.join(__dirname, './upload')));
 
 // Acceso de la app en Angular
 const corsOptions = {
@@ -25,7 +29,7 @@ async function start() {
     try {
         await sequelize.authenticate();
         console.log('Nos conectamos a la bd');
-        await sequelize.sync({ force: true }); // Esto sincronizará los modelos con la base de datos
+        await sequelize.sync({ alter:true, force:false  }); // Esto sincronizará los modelos con la base de datos
         app.listen(3000, () => {
             console.log('Servidor escuchando en el puerto 3000');
         });
@@ -37,3 +41,4 @@ async function start() {
 start(); // Llamamos la función
 
 app.use('/usuario', usuarioRoutes); // Las rutas para los usuarios serán leídas desde localhost/usuario/
+app.use('/producto', articuloRuta)
