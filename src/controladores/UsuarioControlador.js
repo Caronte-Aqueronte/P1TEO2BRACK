@@ -7,7 +7,7 @@ const login = async (req, res) => {
     try {
         // Verificar si los parámetros son nulos
         if (!req.body.email || !req.body.password) {
-            return res.status(400).json({ mensaje: 'Falta correo electrónico o contraseña' });
+            return res.status(400).json({ bandera: false, mensaje: 'Falta correo electrónico o contraseña' });
         }
 
         // Encriptar la contraseña
@@ -21,14 +21,16 @@ const login = async (req, res) => {
             }
         });
 
-        if (usuarioEncontrado) {
-            return res.json({ usuarioEncontrado });
-        } else {
-            return res.send(null);
+        if (!usuarioEncontrado) {
+            return res.send({ bandera: false, mensaje: "Credenciales incorrectas." });
         }
+        if (usuarioEncontrado.estado_aprobacion === false) {
+            return res.json({ bandera: false, mensaje: "Tu usuario no ha sido aprobado." });
+        }
+        return res.json({ bandera: true, usuarioEncontrado: usuarioEncontrado });
     } catch (error) {
         console.error('Error en la autenticación:', error);
-        return res.send(null);
+        return res.json({ bandera: false, mensaje: "Error en la identificación" });
     }
 }
 

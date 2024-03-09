@@ -27,14 +27,17 @@ const Producto = sequelize.define('Producto', {
         allowNull: false
     },
     estado_aprobacion: {
-        type: DataTypes.BOOLEAN,
+        type: DataTypes.INTEGER,
         allowNull: false
     },
     estado_venta: {
         type: DataTypes.BOOLEAN,
         allowNull: false
     },
-    // Aquí podrías agregar más atributos del producto según tus necesidades
+    mostrar_contacto: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+    },
 });
 
 // Definir la relación Producto pertenece a Usuario

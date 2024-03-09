@@ -3,7 +3,7 @@ const sequelize = require('../sequelize');
 const Tag = require('./Tag');
 const Producto = require('./Producto');
 
-const TagProducto = sequelize.define('TagProducto', {
+const TagProducto = sequelize.define('Tag_Producto', {
     // Puedes agregar atributos adicionales si son necesarios
 });
 
