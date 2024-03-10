@@ -8,6 +8,7 @@ const uploader = multer({storage}).single('file');//indicamos que solo se recibi
 
 router.post('/crearProducto',uploader, productoController.crearProducto);//definiendo ruta para crear archivo
 router.delete('/eliminarProducto/:id', productoController.eliminarProducto);
+router.post('/recomendarProductos', productoController.recomendarProductos);
 router.get('/traerProductosAprobadosDeUnUsuario', productoController.traerProductosAprobadosDeUnUsuario);
 router.get('/traerProductosPendientesDeUnUsuario', productoController.traerProductosPendientesDeUnUsuario);
 router.get('/traerProductosRechazadosDeUnUsuario', productoController.traerProductosRechazadosDeUnUsuario);

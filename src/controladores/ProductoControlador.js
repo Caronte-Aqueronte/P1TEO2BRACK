@@ -1,9 +1,10 @@
 const Producto = require('../modelos/Producto'); // Importa el modelo User
+const Tag = require('../modelos/Tag'); // Importa el modelo User
 const sequelize = require('../sequelize'); // Importa la instancia de Sequelize
+const { Op } = require('sequelize');
 const TagProducto = require('../modelos/TagProducto')
 const crearProducto = async (req, res) => {
     try {
-        console.log(req.body);
         // Verificar si los parámetros son nulos
         if (!req.body.nombre || !req.body.precio || !req.body.descripcion || !req.body.userId ||
             !req.file || !req.body.tags || !req.body.mostrar_contacto) {
@@ -168,7 +169,6 @@ const traerProductosRechazadosDeUnUsuario = async (req, res) => {
             where: {
                 UserId: req.query.userId,
                 estado_aprobacion: -1,
-                estado_venta: 0
             }
         });
 
@@ -179,11 +179,82 @@ const traerProductosRechazadosDeUnUsuario = async (req, res) => {
     }
 }
 
+const recomendarProductos = async (req, res) => {
+    try {
+        const nombreProducto = req.body.nombreProducto;
+        const etiquetas = req.body.etiquetas;
+
+        if (nombreProducto === undefined || etiquetas === undefined) {
+            return res.json({ productosRecomendados: [] });
+        }
+
+        // Extraer solo los nombres de las etiquetas del array de objetos
+        const nombresEtiquetas = etiquetas.map(etiqueta => etiqueta.nombre_tag);
+        let productosPorNombre = [];
+
+        if (nombreProducto !== "") {
+            // Buscar productos por coincidencia de nombre
+            productosPorNombre = await Producto.findAll({
+                where: {
+                    nombre: {
+                        [Op.like]: `%${nombreProducto}%`
+                    },
+                    estado_aprobacion: 1
+                },
+                include: [Tag] // Incluir las etiquetas asociadas a los productos
+            });
+
+        }
+
+        // Buscar productos por etiquetas
+        const productosPorEtiquetas = await Producto.findAll({
+            where: {
+                estado_aprobacion: 1
+            },
+            include: [{
+                model: Tag,
+                where: {
+                    nombre_tag: {
+                        [Op.in]: nombresEtiquetas // Usar solo los nombres de las etiquetas
+                    }
+                }
+            }]
+        });
+
+        // Combinar los resultados de ambas búsquedas y eliminar duplicados
+        let productosRecomendados = [...productosPorNombre, ...productosPorEtiquetas];
+        productosRecomendados = eliminarDuplicados(productosRecomendados);
+        // Seleccionar máximo 5 productos recomendados
+        productosRecomendados = productosRecomendados.slice(0, 5);
+
+        return res.json({ productosRecomendados: productosRecomendados });
+    } catch (error) {
+        console.error(error);
+        return res.json({ productosRecomendados: [] });
+    }
+};
+
+// Función para eliminar productos duplicados
+function eliminarDuplicados(array) {
+    const uniqueArray = [];
+    const idsSet = new Set();
+
+    for (const item of array) {
+        if (!idsSet.has(item.id)) {
+            uniqueArray.push(item);
+            idsSet.add(item.id);
+        }
+    }
+
+    return uniqueArray;
+}
+
 module.exports = {
     crearProducto,
     traerProductosAprobadosDeUnUsuario,
     traerProductosPendientesDeUnUsuario,
     traerProductosRechazadosDeUnUsuario,
     traerProductosVendidosDelUsuario,
-    eliminarProducto
+    eliminarProducto,
+    recomendarProductos
 };

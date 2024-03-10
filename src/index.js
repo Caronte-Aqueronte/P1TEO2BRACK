@@ -6,7 +6,9 @@ const bodyParser = require('body-parser');
 const sequelize = require('./sequelize');
 const usuarioRoutes = require('./rutas/UsuarioRuta');
 const articuloRuta = require('./rutas/ProductoRuta');
+
 const tagRuta = require('./rutas/TagRuta');
+const compraRuta = require('./rutas/CompraRuta');
 const path = require("path");
 const app = express();
 
@@ -43,4 +45,5 @@ start(); // Llamamos la función
 
 app.use('/usuario', usuarioRoutes); // Las rutas para los usuarios serán leídas desde localhost/usuario/
 app.use('/producto', articuloRuta);
+app.use('/compra', compraRuta);
 app.use('/tags', tagRuta);
