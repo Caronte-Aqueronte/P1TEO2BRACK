@@ -5,6 +5,6 @@ const router = express.Router();
 
 
 router.post('/login', articuloController.login);//definiendo ruta para crear archivo
-router.post('/createUser', articuloController.createUser);//definiendo ruta para crear archivo
+router.post('/crearUsuarioNormal', articuloController.crearUsuarioNormal);//definiendo ruta para crear archivo
 
 module.exports = router;//exporar el routers

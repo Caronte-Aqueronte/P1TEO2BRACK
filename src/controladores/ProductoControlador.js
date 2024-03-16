@@ -1,4 +1,5 @@
 const Producto = require('../modelos/Producto'); // Importa el modelo User
+const Usuario = require('../modelos/Usuario');
 const Tag = require('../modelos/Tag'); // Importa el modelo User
 const sequelize = require('../sequelize'); // Importa la instancia de Sequelize
 const { Op } = require('sequelize');
@@ -179,12 +180,62 @@ const traerProductosRechazadosDeUnUsuario = async (req, res) => {
     }
 }
 
+
+const traerProductoPorId = async (req, res) => {
+    try {
+        // Verificar si el parámetro productId es nulo
+        if (!req.query.id) {
+            return res.json([]);
+        }
+
+        // Buscar el producto por su ID incluyendo información del usuario y los tags asociados
+        const producto = await Producto.findByPk(req.query.id, {
+            include: [
+                { model: Usuario }, // Incluir información del usuario
+                { model: Tag }   // Incluir información de los tags
+            ] 
+        });
+
+        if (!producto) {
+            return res.json({ bandera: false, mensaje: "El producto no existe" });
+        }
+
+        // Obtener los nombres de los tags asociados al producto
+        const nombresTags = producto.Tags.map(tag => tag.nombre_tag);
+
+        return res.json({ 
+            bandera: true, 
+            producto: { 
+                id: producto.id,
+                nombre: producto.nombre,
+                precio: producto.precio,
+                descripcion: producto.descripcion,
+                imagen: producto.imagen,
+                mostrar_contacto:producto.mostrar_contacto,
+                usuario: {
+                    id: producto.User.id,
+                    nombre: producto.User.nombre_usuario,
+                    // Agregar más campos del usuario si es necesario
+                },
+                tags: nombresTags // Agregar los nombres de los tags al objeto producto
+            } 
+        });
+    } catch (error) {
+        console.log(error)
+        return res.json({ bandera: false, mensaje: "Error al buscar producto." });
+    }
+}
+
+
+
 const recomendarProductos = async (req, res) => {
     try {
         const nombreProducto = req.body.nombreProducto;
         const etiquetas = req.body.etiquetas;
+        const idUsuario = req.body.idUsuario;
 
-        if (nombreProducto === undefined || etiquetas === undefined) {
+        if (nombreProducto === undefined || etiquetas === undefined
+            ||  idUsuario === undefined) {
             return res.json({ productosRecomendados: [] });
         }
 
@@ -199,7 +250,11 @@ const recomendarProductos = async (req, res) => {
                     nombre: {
                         [Op.like]: `%${nombreProducto}%`
                     },
-                    estado_aprobacion: 1
+                    estado_aprobacion: 1,
+                    estado_venta: false,
+                    UserId: {
+                        [Op.ne]: idUsuario // Excluir productos del usuario
+                    }
                 },
                 include: [Tag] // Incluir las etiquetas asociadas a los productos
             });
@@ -209,7 +264,11 @@ const recomendarProductos = async (req, res) => {
         // Buscar productos por etiquetas
         const productosPorEtiquetas = await Producto.findAll({
             where: {
-                estado_aprobacion: 1
+                estado_aprobacion: 1,
+                estado_venta: false,
+                UserId: {
+                    [Op.ne]: idUsuario // Excluir productos del usuario
+                }
             },
             include: [{
                 model: Tag,
@@ -256,5 +315,6 @@ module.exports = {
     traerProductosRechazadosDeUnUsuario,
     traerProductosVendidosDelUsuario,
     eliminarProducto,
-    recomendarProductos
+    recomendarProductos,
+    traerProductoPorId
 };

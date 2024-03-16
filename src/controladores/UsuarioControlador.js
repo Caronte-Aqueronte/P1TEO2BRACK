@@ -34,39 +34,53 @@ const login = async (req, res) => {
     }
 }
 
-const createUser = async (req, res) => {
+const crearUsuarioNormal = async (req, res) => {
+    return res.json( await crearUsuario(req.body.email, req.body.password, req.body.nombre_usuario
+        , "usuario", false));
+}
+
+const crearUsuarioAdmin = async (req, res) => {
+    return res.json(await crearUsuario(req.body.email, req.body.password, req.body.nombre_usuario
+        , "admin", true));
+}
+
+
+const crearUsuario = async (email, password, nombre_usuario, rol,
+    estado_aprobacion) => {
     try {
         // Verificar si los parámetros son nulos
-        if (!req.body.email || !req.body.password || !req.body.nombre_usuario
-            || !req.body.rol) {
-            return res.status(400).json({ mensaje: 'Falta correo electrónico, nombre de usuario, rol o contraseña' });
+        if (!email || !password || !nombre_usuario ||
+            !rol) {
+            return {
+                bandera: false,
+                mensaje: 'Falta correo electrónico,' +
+                    ' nombre de usuario, rol o contraseña'
+            };
         }
-
-        var estado_aprobacion = true;
-        if (req.body.rol === "vendedor") {
-            estado_aprobacion = false;
-        }
-
         // Encriptar la contraseña
-        const hashedPassword = crypto.createHash('sha256').update(req.body.password).digest('hex');
+        const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
         // Crear un nuevo usuario en la base de datos
         const newUser = await User.create({
-            email: req.body.email,
+            email: email,
             password: hashedPassword,
-            nombre_usuario: req.body.nombre_usuario,
-            rol: req.body.rol,
+            nombre_usuario: nombre_usuario,
+            rol: rol,
             estado_aprobacion: estado_aprobacion
         });
 
-        return res.status(201).json({ mensaje: 'Usuario creado correctamente', usuario: newUser });
+        if(estado_aprobacion){
+            return { bandera: true, mensaje: 'Usuario creado correctamente', usuario: newUser };
+        }
+        return { bandera: true, mensaje: 'Usuario creado correctamente, pendiente de aprobación', usuario: newUser };
     } catch (error) {
         console.error('Error al crear usuario:', error);
-        return res.status(500).json({ mensaje: 'Error al crear usuario' });
+        return { bandera: false, mensaje: 'Error al crear usuario' };
     }
 }
 
 module.exports = {
     login,
-    createUser
+    crearUsuarioNormal,
+    crearUsuarioAdmin
 };

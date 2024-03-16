@@ -17,7 +17,6 @@ const User = sequelize.define('User', {
     rol: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
     },
     email: {
         type: DataTypes.STRING,
@@ -33,5 +32,6 @@ const User = sequelize.define('User', {
         allowNull: false
     }
 });
+
 
 module.exports = User;
