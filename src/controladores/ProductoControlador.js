@@ -3,7 +3,9 @@ const Usuario = require('../modelos/Usuario');
 const Tag = require('../modelos/Tag'); // Importa el modelo User
 const sequelize = require('../sequelize'); // Importa la instancia de Sequelize
 const { Op } = require('sequelize');
-const TagProducto = require('../modelos/TagProducto')
+const TagProducto = require('../modelos/TagProducto');
+const Reporte = require('../modelos/Reporte');
+const User = require('../modelos/Usuario');
 const crearProducto = async (req, res) => {
     try {
         // Verificar si los parámetros son nulos
@@ -380,6 +382,25 @@ const rechazarProducto = async (req, res) => {
     }
 }
 
+const mostrarProductosReportados = async (req, res) => {
+    try {
+        // Buscar todos los productos que tienen al menos un reporte asociado
+        const productosReportados = await Producto.findAll({
+            include: [
+                {
+                    model: Reporte,
+                    required: true, // Asegura que solo se devuelvan productos con al menos un reporte
+                },
+            ]
+        });
+
+        return res.json(productosReportados);
+    } catch (error) {
+        console.error('Error al mostrar productos reportados:', error);
+        return res.json([]);
+    }
+}
+
 
 module.exports = {
     crearProducto,
@@ -392,5 +413,6 @@ module.exports = {
     traerProductoPorId,
     traerSolicitudesDeAprovacion,
     aceptarProducto,
-    rechazarProducto
+    rechazarProducto,
+    mostrarProductosReportados
 };

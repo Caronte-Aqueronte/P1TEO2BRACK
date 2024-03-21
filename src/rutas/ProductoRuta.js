@@ -12,6 +12,7 @@ router.post('/recomendarProductos', productoController.recomendarProductos);
 router.post('/rechazarProducto', productoController.rechazarProducto);
 router.post('/aceptarProducto', productoController.aceptarProducto);
 router.get('/traerProductoPorId', productoController.traerProductoPorId);
+router.get('/mostrarProductosReportados', productoController.mostrarProductosReportados);
 router.get('/traerProductosAprobadosDeUnUsuario', productoController.traerProductosAprobadosDeUnUsuario);
 router.get('/traerProductosPendientesDeUnUsuario', productoController.traerProductosPendientesDeUnUsuario);
 router.get('/traerProductosRechazadosDeUnUsuario', productoController.traerProductosRechazadosDeUnUsuario);

@@ -8,7 +8,7 @@ const usuarioRoutes = require('./rutas/UsuarioRuta');
 const articuloRuta = require('./rutas/ProductoRuta');
 const monedaRuta = require('./rutas/MonedaRuta');
 const retiroRuta = require('./rutas/RetiroRuta');
-
+const reporteRuta = require('./rutas/ReporteRuta');
 
 const tagRuta = require('./rutas/TagRuta');
 const compraRuta = require('./rutas/CompraRuta');
@@ -35,7 +35,7 @@ async function start() {
     try {
         await sequelize.authenticate();
         console.log('Nos conectamos a la bd');
-        await sequelize.sync({ alter: true, force: false }); // Esto sincronizará los modelos con la base de datos
+        await sequelize.sync({ alter: true, force: true }); // Esto sincronizará los modelos con la base de datos
         app.listen(3000, () => {
             console.log('Servidor escuchando en el puerto 3000');
         });
@@ -52,3 +52,4 @@ app.use('/compra', compraRuta);
 app.use('/tags', tagRuta);
 app.use('/moneda', monedaRuta);
 app.use('/retiro', retiroRuta);
+app.use('/reporte', reporteRuta);

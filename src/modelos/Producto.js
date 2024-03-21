@@ -4,6 +4,7 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../sequelize');
 const User = require('./Usuario'); // Importa el modelo de usuario
 const Tag = require('./Tag');
+const Reporte = require('./Reporte');
 
 const Producto = sequelize.define('Producto', {
     id: {
@@ -40,5 +41,17 @@ const Producto = sequelize.define('Producto', {
         allowNull: false
     },
 });
+
+// Definir la relación Tag pertenece a Usuario con onDelete y onUpdate cascade
+Producto.hasMany(Reporte, {
+    foreignKey: {
+        allowNull: false, // Asegura que un tag siempre tenga un usuario asociado
+        onDelete: 'CASCADE', // Eliminación en cascada
+        onUpdate: 'CASCADE' // Actualización en cascada
+    }
+    ,
+    hooks: true
+});
+Reporte.belongsTo(Producto);
 
 module.exports = Producto;
