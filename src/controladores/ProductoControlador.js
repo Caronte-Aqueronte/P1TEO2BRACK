@@ -308,6 +308,79 @@ function eliminarDuplicados(array) {
     return uniqueArray;
 }
 
+const traerSolicitudesDeAprovacion = async (req, res) => {
+    try {
+        // Buscar tags en función del ID del usuario
+        const productos = await Producto.findAll({
+            where: {
+                estado_aprobacion: 0,
+            },
+            include: [
+                { model: Usuario }, // Incluir información del usuario
+            ] 
+        });
+
+        return res.json({ productos: productos });
+    } catch (error) {
+        console.log(error)
+        return res.json([]);
+    }
+}
+
+const aceptarProducto = async (req, res) => {
+    try {
+        // Verificar si el parámetro productId es nulo
+        if (!req.body.id) {
+            return res.json({ bandera: false, mensaje: 'El ID del producto no fue proporcionado' });
+        }
+
+        // Buscar el producto por su ID
+        const producto = await Producto.findByPk(req.body.id);
+
+        // Verificar si el producto existe
+        if (!producto) {
+            return res.json({ bandera: false, mensaje: 'El producto no existe' });
+        }
+
+        // Actualizar el estado de aprobación del producto a 1
+        await producto.update({ estado_aprobacion: 1 });
+
+        return res.json({ bandera: true, mensaje: 'Producto aceptado correctamente', producto: producto });
+
+    } catch (error) {
+        console.error(error);
+        return res.json({ bandera: false, mensaje: 'Error al aceptar el producto' });
+    }
+}
+
+
+const rechazarProducto = async (req, res) => {
+    try {
+        // Verificar si el parámetro productId es nulo
+        if (!req.body.id) {
+            return res.json({ bandera: false, mensaje: 'El ID del producto no fue proporcionado' });
+        }
+
+        // Buscar el producto por su ID
+        const producto = await Producto.findByPk(req.body.id);
+
+        // Verificar si el producto existe
+        if (!producto) {
+            return res.json({ bandera: false, mensaje: 'El producto no existe' });
+        }
+
+        // Actualizar el estado de aprobación del producto a 1
+        await producto.update({ estado_aprobacion: -1 });
+
+        return res.json({ bandera: true, mensaje: 'Producto rechazado correctamente', producto: producto });
+
+    } catch (error) {
+        console.error(error);
+        return res.json({ bandera: false, mensaje: 'Error al rechazar el producto' });
+    }
+}
+
+
 module.exports = {
     crearProducto,
     traerProductosAprobadosDeUnUsuario,
@@ -316,5 +389,8 @@ module.exports = {
     traerProductosVendidosDelUsuario,
     eliminarProducto,
     recomendarProductos,
-    traerProductoPorId
+    traerProductoPorId,
+    traerSolicitudesDeAprovacion,
+    aceptarProducto,
+    rechazarProducto
 };

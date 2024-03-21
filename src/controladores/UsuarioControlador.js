@@ -1,13 +1,13 @@
 const User = require('../modelos/Usuario'); // Importa el modelo User
 const sequelize = require('../sequelize'); // Importa la instancia de Sequelize
-
+const { Op } = require('sequelize');
 const crypto = require('crypto');
 
 const login = async (req, res) => {
     try {
         // Verificar si los parámetros son nulos
         if (!req.body.email || !req.body.password) {
-            return res.status(400).json({ bandera: false, mensaje: 'Falta correo electrónico o contraseña' });
+            return res.json({ bandera: false, mensaje: 'Falta correo electrónico o contraseña' });
         }
 
         // Encriptar la contraseña
@@ -34,8 +34,125 @@ const login = async (req, res) => {
     }
 }
 
+
+const aceptarUsuario = async (req, res) => {
+    try {
+        // Obtener el ID del usuario a aceptar desde los parámetros de la solicitud
+        const usuarioId = req.body.id;
+
+        // Verificar si el ID del usuario es nulo o no válido
+        if (!usuarioId) {
+            return res.json({ bandera: false, mensaje: 'Se requiere proporcionar un ID de usuario válido.' });
+        }
+
+        // Buscar el usuario por su ID
+        const usuario = await User.findByPk(usuarioId);
+
+        // Verificar si el usuario existe
+        if (!usuario) {
+            return res.json({ bandera: false, mensaje: 'El usuario especificado no fue encontrado.' });
+        }
+
+        // Actualizar el estado de aprobación del usuario
+        await usuario.update({ estado_aprobacion: true });
+
+        // Responder con un mensaje de éxito
+        return res.json({ bandera: true, mensaje: 'El usuario fue aceptado correctamente.' });
+    } catch (error) {
+        console.error('Error al intentar aceptar el usuario:', error);
+        return res.json({ bandera: false, mensaje: 'Ocurrió un error al intentar aceptar el usuario.' });
+    }
+}
+
+const eliminarUsuario = async (req, res) => {
+    try {
+        // Obtener el ID del usuario a eliminar desde los parámetros de la solicitud
+        const usuarioId = req.params.id;
+
+        // Verificar si el ID del usuario es nulo o no válido
+        if (!usuarioId) {
+            return res.json({ bandera: false, mensaje: 'Se requiere proporcionar un ID de usuario válido.' });
+        }
+
+        // Buscar el usuario por su ID
+        const usuario = await User.findByPk(usuarioId);
+
+        // Verificar si el usuario existe
+        if (!usuario) {
+            return res.json({ bandera: false, mensaje: 'El usuario especificado no fue encontrado.' });
+        }
+
+        // Eliminar el usuario
+        await usuario.destroy();
+
+        // Responder con un mensaje de éxito
+        return res.json({ bandera: true, mensaje: 'El usuario fue eliminado correctamente.' });
+    } catch (error) {
+        console.error('Error al intentar eliminar el usuario:', error);
+        return res.json({ bandera: false, mensaje: 'Ocurrió un error al intentar eliminar el usuario.' });
+    }
+}
+
+const traerSolicitudes = async (req, res) => {
+    try {
+        // Buscar el usuario por correo electrónico y contraseña en la base de datos
+        const solis = await User.findAll({
+            where: {
+                estado_aprobacion: false
+            }
+        });
+        return res.json(solis);
+    } catch (error) {
+        console.error('Error en la autenticación:', error);
+        return res.json([]);
+    }
+}
+
+const traerUsuarios = async (req, res) => {
+    try {
+        const userId = req.query.id; // Supongo que tienes la información del usuario que ha iniciado sesión en req.user
+
+        // Buscar todos los usuarios cuyo estado de aprobación sea verdadero, excluyendo al usuario actual
+        const usuarios = await User.findAll({
+            where: {
+                estado_aprobacion: true,
+                id: {
+                    [Op.ne]: userId // Excluir al usuario actual por su ID
+                }
+            }
+        });
+
+        return res.json(usuarios);
+    } catch (error) {
+        console.error('Error al obtener usuarios:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+}
+const buscarUsuariosPorNombre = async (req, res) => {
+    try {
+        // Verificar si los parámetros son nulos
+        if (req.query.nombreUsuario === undefined) {
+            return res.json([]);
+        }
+        // Buscar el usuario por correo electrónico y contraseña en la base de datos
+        const usuarios = await User.findAll({
+            where: {
+                nombre_usuario: {
+                    [Op.like]: `%${req.query.nombreUsuario}%`
+                },
+                estado_aprobacion: true,
+            }
+        }
+        );
+        return res.json(usuarios);
+    } catch (error) {
+        console.error('Error en la autenticación:', error);
+        return res.json([]);
+    }
+}
+
 const crearUsuarioNormal = async (req, res) => {
-    return res.json( await crearUsuario(req.body.email, req.body.password, req.body.nombre_usuario
+    return res.json(await crearUsuario(req.body.email, req.body.password, req.body.nombre_usuario
         , "usuario", false));
 }
 
@@ -69,7 +186,7 @@ const crearUsuario = async (email, password, nombre_usuario, rol,
             estado_aprobacion: estado_aprobacion
         });
 
-        if(estado_aprobacion){
+        if (estado_aprobacion) {
             return { bandera: true, mensaje: 'Usuario creado correctamente', usuario: newUser };
         }
         return { bandera: true, mensaje: 'Usuario creado correctamente, pendiente de aprobación', usuario: newUser };
@@ -82,5 +199,10 @@ const crearUsuario = async (email, password, nombre_usuario, rol,
 module.exports = {
     login,
     crearUsuarioNormal,
-    crearUsuarioAdmin
+    crearUsuarioAdmin,
+    traerSolicitudes,
+    traerUsuarios,
+    buscarUsuariosPorNombre,
+    eliminarUsuario,
+    aceptarUsuario
 };

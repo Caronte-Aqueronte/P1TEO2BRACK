@@ -28,11 +28,4 @@ const Compra = sequelize.define('Compra', {
     },
 });
 
-// Definir la relación Producto pertenece a Usuario
-Compra.belongsTo(User, {
-    foreignKey: {
-        allowNull: false // Asegura que un producto siempre tenga un usuario asociado
-    }
-});
-
 module.exports = Compra;

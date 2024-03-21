@@ -19,11 +19,6 @@ const Moneda = sequelize.define('Moneda', {
     },
 });
 
-// Definir la relación Producto pertenece a Usuario
-Moneda.belongsTo(User, {
-    foreignKey: {
-        allowNull: false // Asegura que un producto siempre tenga un usuario asociado
-    }
-});
+
 
 module.exports = Moneda;
