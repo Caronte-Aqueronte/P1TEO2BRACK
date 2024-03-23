@@ -194,8 +194,10 @@ const traerProductoPorId = async (req, res) => {
         const producto = await Producto.findByPk(req.query.id, {
             include: [
                 { model: Usuario }, // Incluir información del usuario
-                { model: Tag }   // Incluir información de los tags
-            ] 
+                { model: Tag },   // Incluir información de los tags
+                { model: Reporte }
+
+            ]
         });
 
         if (!producto) {
@@ -205,22 +207,23 @@ const traerProductoPorId = async (req, res) => {
         // Obtener los nombres de los tags asociados al producto
         const nombresTags = producto.Tags.map(tag => tag.nombre_tag);
 
-        return res.json({ 
-            bandera: true, 
-            producto: { 
+        return res.json({
+            bandera: true,
+            producto: {
                 id: producto.id,
                 nombre: producto.nombre,
                 precio: producto.precio,
                 descripcion: producto.descripcion,
                 imagen: producto.imagen,
-                mostrar_contacto:producto.mostrar_contacto,
+                mostrar_contacto: producto.mostrar_contacto,
                 usuario: {
                     id: producto.User.id,
                     nombre: producto.User.nombre_usuario,
                     // Agregar más campos del usuario si es necesario
                 },
                 tags: nombresTags // Agregar los nombres de los tags al objeto producto
-            } 
+                ,reportes: producto.Reportes
+            }
         });
     } catch (error) {
         console.log(error)
@@ -237,7 +240,7 @@ const recomendarProductos = async (req, res) => {
         const idUsuario = req.body.idUsuario;
 
         if (nombreProducto === undefined || etiquetas === undefined
-            ||  idUsuario === undefined) {
+            || idUsuario === undefined) {
             return res.json({ productosRecomendados: [] });
         }
 
@@ -319,7 +322,7 @@ const traerSolicitudesDeAprovacion = async (req, res) => {
             },
             include: [
                 { model: Usuario }, // Incluir información del usuario
-            ] 
+            ]
         });
 
         return res.json({ productos: productos });
